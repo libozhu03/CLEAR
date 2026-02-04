@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="CLEAR: Combined Flicker-banding and Moire Removal for Screen-Captured Images">
+  <meta name="description"
+    content="CLEAR proposes a unified framework for joint removal of moire patterns and flicker-banding artifacts in screen-captured images.">
+  <meta name="keywords"
+    content="moire removal, flicker-banding removal, image restoration, diffusion models, screen capture, computer vision, machine learning">
+  <meta name="author"
+    content="Libo Zhu, Zihan Zhou, Zhiyi Zhou, Yiyang Qu, Weihang Zhang, Keyu Shi, Yifan Fu, Yulun Zhang">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Shanghai Jiao Tong University">
+  <meta property="og:title" content="CLEAR: Combined Flicker-banding and Moire Removal for Screen-Captured Images">
+  <meta property="og:description"
+    content="CLEAR proposes a unified framework for joint removal of moire patterns and flicker-banding artifacts in screen-captured images.">
+  <meta property="og:url" content="https://libozhu03.github.io/CLEAR">
+  <meta property="og:image" content="https://libozhu03.github.io/CLEAR/assets/figs/teaser.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CLEAR: Combined Flicker-banding and Moire Removal for Screen-Captured Images">
+  <meta name="twitter:description"
+    content="CLEAR proposes a unified framework for joint removal of moire patterns and flicker-banding artifacts in screen-captured images.">
+  <meta name="twitter:image" content="https://libozhu03.github.io/CLEAR/assets/figs/teaser.jpg">
+
+  <!-- Academic/Research Specific -->
+  <meta name="citation_title" content="Combined Flicker-banding and Moire Removal for Screen-Captured Images">
+  <meta name="citation_author" content="Zhu, Libo">
+  <meta name="citation_author" content="Zhou, Zihan">
+  <meta name="citation_author" content="Zhou, Zhiyi">
+  <meta name="citation_author" content="Qu, Yiyang">
+  <meta name="citation_author" content="Zhang, Weihang">
+  <meta name="citation_author" content="Shi, Keyu">
+  <meta name="citation_author" content="Fu, Yifan">
+  <meta name="citation_author" content="Zhang, Yulun">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="arXiv preprint">
+
+  <!-- Additional SEO -->
+  <meta name="theme-color" content="#7c3aed">
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <title>CLEAR: Combined Flicker-banding and Moire Removal for Screen-Captured Images</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/bulma.min.css">
+  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="preload" href="assets/css/bulma-carousel.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="assets/css/bulma-slider.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="assets/css/fontawesome.all.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+
+  <noscript>
+    <link rel="stylesheet" href="assets/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="assets/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="assets/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  </noscript>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- JavaScript -->
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="assets/js/fontawesome.all.min.js"></script>
+  <script defer src="assets/js/bulma-carousel.min.js"></script>
+  <script defer src="assets/js/bulma-slider.min.js"></script>
+  <script defer src="assets/js/index.js"></script>
+
+  <!-- img-comparison-slider -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+
+  <!-- Custom styles -->
+  <style>
+    .before,
+    .after {
+      margin: 0;
+    }
+
+    .before figcaption,
+    .after figcaption {
+      background: #fff;
+      border: 1px solid #c0c0c0;
+      border-radius: 8px;
+      color: #2e3452;
+      opacity: 0.8;
+      padding: 8px;
+      position: absolute;
+      bottom: 0px;
+      transform: translateY(-50%);
+      line-height: 100%;
+      font-size: 14px;
+    }
+
+    .before figcaption {
+      left: 12px;
+    }
+
+    .after figcaption {
+      right: 12px;
+    }
+
+    .highlight-box {
+      background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+      border-left: 4px solid #7c3aed;
+      padding: 1rem 1.5rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .dataset-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #7c3aed;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <main id="main-content">
+    <!-- Title Section -->
+    <section class="hero">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <div class="columns is-centered">
+            <div class="column has-text-centered">
+              <h1 class="title is-1 publication-title">Combined Flicker-banding and Moire Removal for Screen-Captured
+                Images</h1>
+              <div class="is-size-5 publication-authors">
+                <span class="author-block">
+                  <a href="https://github.com/LiBoZhu030073" target="_blank">Libo Zhu</a><sup>1*</sup>,</span>
+                <span class="author-block">
+                  <a href="https://github.com/ZZH-qwq" target="_blank">Zihan Zhou</a><sup>1*</sup>,</span>
+                <span class="author-block">
+                  Zhiyi Zhou<sup>1</sup>,</span>
+                <span class="author-block">
+                  Yiyang Qu<sup>1</sup>,</span>
+                <span class="author-block">
+                  Weihang Zhang<sup>2</sup>,</span>
+                <span class="author-block">
+                  Keyu Shi<sup>2</sup>,</span>
+                <span class="author-block">
+                  Yifan Fu<sup>2</sup>,</span>
+                <span class="author-block">
+                  <a href="http://yulunzhang.com/" target="_blank">Yulun Zhang</a><sup>1</sup>
+                </span>
+              </div>
+
+              <div class="is-size-5 publication-authors">
+                <span class="author-block"><sup>1</sup>Shanghai Jiao Tong University, <sup>2</sup>Central Media
+                  Technology Institute, Huawei<br>arXiv preprint</span>
+                <span class="eql-cntrb"><small><br><sup>*</sup>Indicates Equal Contribution</small></span>
+              </div>
+
+              <div class="column has-text-centered">
+                <div class="publication-links">
+                  <span class="link-block">
+                    <a href="#" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                      <span>Paper</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="#" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                      <span>Supplementary</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="#" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="fab fa-github"></i></span>
+                      <span>Code</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="#" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="ai ai-arxiv"></i></span>
+                      <span>arXiv</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="#Dataset" class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="fas fa-database"></i></span>
+                      <span>Dataset</span>
+                    </a>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div style="margin-top: -2rem;"></div>
+
+    <!-- Teaser Figure -->
+    <section class="hero teaser">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <img src="assets/figs/teaser.jpg" alt="CLEAR Teaser Figure" loading="lazy" />
+          <p class="subtitle has-text-centered" style="margin-top: 0.5rem;">
+            <b>Left:</b> Examples of three degradation types in our MIRAGE dataset (flicker-banding, moire, combined).
+            <b>Right:</b> CLEAR restoration results compared with input (LQ) and ground-truth (GT).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Image Comparison Slider -->
+    <section class="section hero is-small is-light">
+      <div class="container is-max-desktop">
+        <h2 class="title is-3 has-text-centered">Joint Flicker-Banding & Moire Removal Results</h2>
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-one-third">
+            <img-comparison-slider>
+              <figure slot="first" class="before">
+                <img width="100%" src="assets/images/compare1_lq.jpg">
+                <figcaption>Input</figcaption>
+              </figure>
+              <figure slot="second" class="after">
+                <img width="100%" src="assets/images/compare1_clear.jpg">
+                <figcaption>CLEAR</figcaption>
+              </figure>
+            </img-comparison-slider>
+          </div>
+          <div class="column is-one-third">
+            <img-comparison-slider>
+              <figure slot="first" class="before">
+                <img width="100%" src="assets/images/compare2_lq.jpg">
+                <figcaption>Input</figcaption>
+              </figure>
+              <figure slot="second" class="after">
+                <img width="100%" src="assets/images/compare2_clear.jpg">
+                <figcaption>CLEAR</figcaption>
+              </figure>
+            </img-comparison-slider>
+          </div>
+          <div class="column is-one-third">
+            <img-comparison-slider>
+              <figure slot="first" class="before">
+                <img width="100%" src="assets/images/compare3_lq.jpg">
+                <figcaption>Input</figcaption>
+              </figure>
+              <figure slot="second" class="after">
+                <img width="100%" src="assets/images/compare3_clear.jpg">
+                <figcaption>CLEAR</figcaption>
+              </figure>
+            </img-comparison-slider>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Abstract -->
+    <section class="section hero">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <h2 class="title is-3">Abstract</h2>
+            <div class="content has-text-justified">
+              <p>
+                Capturing display screens with mobile devices has become increasingly common, yet the resulting images
+                often suffer from severe degradations caused by the coexistence of <b>moire patterns</b> and
+                <b>flicker-banding</b>, leading to significant visual quality degradation. Due to the strong coupling of
+                these two artifacts in real imaging processes, existing methods designed for single degradations fail to
+                generalize to such compound scenarios.
+              </p>
+              <p>
+                In this paper, we present the first systematic study on joint removal of moire patterns and
+                flicker-banding in screen-captured images, and propose a unified restoration framework, named
+                <b>CLEAR</b>. To support this task, we construct a large-scale dataset <b>MIRAGE</b> containing both
+                moire patterns and flicker-banding, and introduce an <b>ISP-based flicker simulation pipeline</b> to
+                stabilize model training and expand the degradation distribution. Furthermore, we design a
+                <b>frequency-domain decomposition and re-composition module</b> together with a <b>trajectory alignment
+                  loss</b> to enhance the modeling of compound artifacts.
+              </p>
+              <p>
+                Extensive experiments demonstrate that the proposed method consistently outperforms existing image
+                restoration approaches across multiple evaluation metrics, validating its effectiveness in complex
+                real-world scenarios.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Method Overview -->
+    <section class="hero is-small is-light">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <h2 class="title" style="transform: translateY(1.5rem);">Method</h2>
+          <div id="results-carousel" class="carousel results-carousel">
+            <div class="item">
+              <img src="assets/figs/pipeline_simulation.jpg" alt="ISP-based Simulation Pipeline" loading="lazy" />
+              <h2 class="subtitle has-text-centered">
+                <b>ISP-based Simulation Pipeline (ISPS):</b> Generates diverse banding patterns in RAW domain using
+                Inverse-ISP model.
+              </h2>
+            </div>
+            <div class="item">
+              <img src="assets/figs/banding_types.jpg" alt="Banding Pattern Types" loading="lazy" />
+              <h2 class="subtitle has-text-centered">
+                <b>Five Banding Types:</b> Linear uniform, curve, stochastic perturbed, diamond, and cracked patterns.
+              </h2>
+            </div>
+            <div class="item" style="text-align: center;">
+              <img src="assets/figs/architecture.jpg" alt="CLEAR Architecture" loading="lazy" style="width:95%" />
+              <h2 class="subtitle has-text-centered">
+                <b>CLEAR Framework:</b> (a) Frequency-domain Segmentation, (b) Overall Architecture, (c) Trajectory
+                Alignment Loss.
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Components -->
+    <section class="section hero is-small">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <h2 class="title is-3">Key Components</h2>
+
+          <div class="highlight-box">
+            <h4 class="title is-5">Frequency-Domain Segmentation (FS)</h4>
+            <p>Uses Butterworth filters to partition the spectrum into low/mid/high frequency bands. Since both
+              flicker-banding and moire artifacts predominantly manifest in the mid-frequency range, we selectively
+              suppress this band while preserving the remaining components, providing better-conditioned input for
+              restoration.</p>
+          </div>
+
+          <div class="highlight-box">
+            <h4 class="title is-5">Trajectory-Aligned Loss (TA)</h4>
+            <p>Constrains feature evolution from degraded inputs to match that from ground-truth targets at the same
+              diffusion timestep. By enforcing per-channel cosine similarity in representation space, this loss
+              stabilizes the denoising trajectory and improves luminance correction while preserving high-frequency
+              details.</p>
+          </div>
+
+          <div class="highlight-box">
+            <h4 class="title is-5">ISP-based Simulation Pipeline (ISPS)</h4>
+            <p>Synthesizes flicker-banding in the linear RAW domain using Inverse-ISP, then applies gain-based
+              degradation with parameterized masks covering five banding types. This enables controlled augmentation of
+              underrepresented degradation patterns while maintaining realistic artifact characteristics.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="section hero is-light">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <div class="columns is-centered has-text-left">
+            <div class="column is-five-sixths">
+              <h2 class="title is-3">Results</h2>
+              <details>
+                <summary class="title is-5">Quantitative Comparisons (click to expand)</summary>
+                <div class="content">
+                  <p class="has-text-centered">
+                    <img src="assets/figs/quantitative_results.png" alt="Quantitative results" loading="lazy">
+                  </p>
+                  <p class="has-text-centered" style="margin-bottom: 1rem;">
+                    CLEAR consistently outperforms existing methods across multiple metrics (ms-SSIM, LPIPS, DISTS,
+                    FSIM, GMSD).
+                  </p>
+                </div>
+              </details>
+              <details>
+                <summary class="title is-5">Visual Comparisons (click to expand)</summary>
+                <div class="content">
+                  <p class="has-text-centered">
+                    <img src="assets/figs/visual_comparison.png" alt="Visual comparison" loading="lazy">
+                  </p>
+                  <p class="has-text-centered" style="margin-bottom: 1rem;">
+                    CLEAR effectively removes severe flicker-banding while simultaneously suppressing moire patterns.
+                  </p>
+                </div>
+              </details>
+              <details>
+                <summary class="title is-5">Ablation Studies (click to expand)</summary>
+                <div class="content">
+                  <p class="has-text-centered">
+                    <img src="assets/figs/ablation.png" alt="Ablation studies" loading="lazy">
+                  </p>
+                  <p class="has-text-centered" style="margin-bottom: 1rem;">
+                    Each component (ISPS, FS, TA) contributes positively to the final performance.
+                  </p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dataset Section -->
+    <section class="section hero" id="Dataset">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <h2 class="title is-3">MIRAGE Dataset</h2>
+          <p class="subtitle">
+            <b>M</b>oire and fl<b>I</b>cke<b>R</b> in screen im<b>A</b><b>G</b><b>E</b> capture - the first large-scale
+            dataset featuring both artifact types.
+          </p>
+
+          <div class="dataset-stats">
+            <div class="stat-card">
+              <div class="stat-number">3,000</div>
+              <div class="stat-label">Image Pairs</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">5</div>
+              <div class="stat-label">Smartphone Cameras</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">3</div>
+              <div class="stat-label">Display Types</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">6</div>
+              <div class="stat-label">Scene Categories</div>
+            </div>
+          </div>
+
+          <div class="content">
+            <h4 class="title is-5">Dataset Characteristics</h4>
+            <ul>
+              <li><b>Comprehensive artifact coverage:</b> 1,000 pairs each for banding-only, moire-only, and combined
+                artifacts</li>
+              <li><b>Diverse capture devices:</b> Vivo X200s, Xiaomi 17 Pro, Huawei Mate 50/60, iPhone 17 Pro</li>
+              <li><b>Multiple display technologies:</b> LCD, LED, OLED screens</li>
+              <li><b>Rich scene diversity:</b> Documents, natural images, cartoons, video games, mobile UI, websites
+              </li>
+              <li><b>High resolution:</b> Average 3706 x 3368 pixels</li>
+            </ul>
+
+            <p style="margin-top: 1.5rem;">
+              <a href="#" class="button is-link is-rounded" disabled>
+                <span class="icon"><i class="fas fa-download"></i></span>
+                <span>Download Dataset (Coming Soon)</span>
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BibTeX -->
+    <section class="section hero is-light" id="BibTeX">
+      <div class="container is-max-desktop content">
+        <div class="bibtex-header">
+          <h2 class="title">BibTeX</h2>
+          <button class="copy-bibtex-btn" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
+            <i class="fas fa-copy"></i>
+            <span class="copy-text">Copy</span>
+          </button>
+        </div>
+        <pre id="bibtex-code"><code>@article{zhu2026clear,
+  title={Combined Flicker-banding and Moire Removal for Screen-Captured Images},
+  author={Zhu, Libo and Zhou, Zihan and Zhou, Zhiyi and Qu, Yiyang and Zhang, Weihang and Shi, Keyu and Fu, Yifan and Zhang, Yulun},
+  journal={arXiv preprint},
+  year={2026}
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="columns is-centered">
+          <div class="column is-8">
+            <div class="content">
+              <p>
+                This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template"
+                  target="_blank">Academic Project Page Template</a> which was adopted from the <a
+                  href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+                This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"
+                  target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+</body>
+
+</html>
